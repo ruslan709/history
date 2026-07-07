@@ -16,36 +16,27 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
 
   function confirmDel(msg: string) { return window.confirm(msg) }
 
-  // Добавить следующую «часть» параграфа (§ из нескольких постов)
-  const PART_RE = /\s*[—–-]\s*Часть\s*(\d+)\s*$/i
+  // Добавить пост с новыми материалами к параграфу (та же тема с пометкой в скобках)
+  const EXTRA_RE = /\s*\(новые материалы к параграфу(?:\s+(\d+))?\)\s*$/i
   function addPart(gradeId: string, section: Section, topic: Topic) {
-    const base = topic.title.replace(PART_RE, '').trimEnd()
-    let maxN = 0
+    const base = topic.title.replace(EXTRA_RE, '').trimEnd()
+    let maxIdx = 0
     for (const t of section.topics) {
-      if (t.title.replace(PART_RE, '').trimEnd() === base) {
-        const m = t.title.match(PART_RE)
-        if (m) maxN = Math.max(maxN, parseInt(m[1], 10))
-      }
+      if (t.title.replace(EXTRA_RE, '').trimEnd() !== base) continue
+      const m = t.title.match(EXTRA_RE)
+      if (m) maxIdx = Math.max(maxIdx, m[1] ? parseInt(m[1], 10) : 1)
     }
-    let renameTo: string | null = null
-    if (!PART_RE.test(topic.title) && maxN === 0) {
-      renameTo = `${base} — Часть 1`
-      maxN = 1
-    }
-    const next = maxN + 1
-    const part = newTopic(`${base} — Часть ${next}`, topic.icon, '')
+    const next = maxIdx + 1
+    const suffix = next === 1 ? '(новые материалы к параграфу)' : `(новые материалы к параграфу ${next})`
+    const part = newTopic(`${base} ${suffix}`, topic.icon, '')
     applyEdit((c) => {
       const s = findSection(c, gradeId, section.id)
       if (!s) return
       const idx = s.topics.findIndex((t) => t.id === topic.id)
-      if (renameTo) {
-        const o = s.topics.find((t) => t.id === topic.id)
-        if (o) o.title = renameTo
-      }
       s.topics.splice(idx < 0 ? s.topics.length : idx + 1, 0, part)
     })
     setEditTopic({ gradeId, sectionId: section.id, topic: part })
-    notify(`Добавлена «Часть ${next}» — впишите ссылку и сохраните`, 'ok')
+    notify('Добавлена строка «новые материалы к параграфу» — впишите ссылку и сохраните', 'ok')
   }
 
   return (
@@ -114,7 +105,7 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
                           <div className="mini-btns">
                             <button className="icon-btn" title="Вверх" disabled={ti === 0} onClick={() => applyEdit((c) => { const ss = findSection(c, g.id, s.id); if (ss) move(ss.topics, ti, -1) })}>↑</button>
                             <button className="icon-btn" title="Вниз" disabled={ti === s.topics.length - 1} onClick={() => applyEdit((c) => { const ss = findSection(c, g.id, s.id); if (ss) move(ss.topics, ti, 1) })}>↓</button>
-                            <button className="icon-btn" title="Добавить часть этого параграфа (§ из нескольких постов)" onClick={() => addPart(g.id, s, t)}>🧩</button>
+                            <button className="icon-btn" title="Добавить пост с новыми материалами к этому параграфу" onClick={() => addPart(g.id, s, t)}>🆕</button>
                             <button className="icon-btn" title="Редактировать тему" onClick={() => setEditTopic({ gradeId: g.id, sectionId: s.id, topic: t })}>✏️</button>
                             <button className="icon-btn del" title="Удалить тему" onClick={() => {
                               if (confirmDel(`Удалить тему «${t.title}»?`))
