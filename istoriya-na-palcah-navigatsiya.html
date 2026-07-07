@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>История на пальцах — Навигация по материалам</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F8F6F2;
+    --paper-2:#F1ECE2;
+    --ink:#182848;
+    --ink-2:#233a63;
+    --gold:#C9A15A;
+    --gold-light:#E7CE9B;
+    --burgundy:#7C2540;
+    --burgundy-light:#9c3a56;
+    --text:#2A2620;
+    --text-muted:#7C7266;
+    --card:#FFFFFF;
+    --line: rgba(24,40,72,0.08);
+    --shadow-sm: 0 2px 10px rgba(24,40,72,0.06);
+    --shadow-md: 0 10px 30px rgba(24,40,72,0.10);
+    --shadow-lg: 0 24px 60px rgba(24,40,72,0.16);
+    --radius-lg: 24px;
+    --radius-md: 18px;
+    --radius-sm: 12px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(201,161,90,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(124,37,64,0.06), transparent 55%),
+      var(--paper);
+    color:var(--text);
+    font-family:'Manrope', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  h1,h2,h3,.serif{ font-family:'PT Serif', serif; }
+
+  ::selection{ background:var(--gold-light); }
+
+  a{ color:inherit; text-decoration:none; }
+
+  button{ font-family:inherit; }
+
+  /* ============ LAYOUT SHELL ============ */
+  .shell{
+    max-width:1320px;
+    margin:0 auto;
+    padding:28px 32px 60px;
+  }
+
+  @media (max-width:640px){
+    .shell{ padding:18px 16px 40px; }
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    position:relative;
+    display:grid;
+    grid-template-columns: 1.3fr 0.9fr;
+    align-items:center;
+    gap:28px;
+    background:linear-gradient(155deg, #ffffff 0%, #fbf9f5 60%, #f6f1e8 100%);
+    border:1px solid var(--line);
+    border-radius: 28px;
+    padding:38px 42px;
+    box-shadow: var(--shadow-md);
+    overflow:hidden;
+  }
+  .topbar::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, var(--ink) 0%, var(--gold) 45%, var(--burgundy) 100%);
+    height:5px;
+    top:0; left:0;
+  }
+
+  .brand-eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--burgundy);
+    font-weight:700;
+    background:rgba(124,37,64,0.07);
+    padding:6px 14px;
+    border-radius:999px;
+    margin-bottom:18px;
+  }
+
+  .topbar h1{
+    font-size:clamp(32px, 4vw, 46px);
+    line-height:1.08;
+    margin:0 0 14px;
+    color:var(--ink);
+    font-weight:700;
+  }
+  .topbar h1 .accent{ color:var(--burgundy); font-style:italic; }
+
+  .topbar p.lead{
+    font-size:16.5px;
+    line-height:1.6;
+    color:var(--text-muted);
+    max-width:52ch;
+    margin:0 0 26px;
+  }
+
+  .search-wrap{
+    position:relative;
+    max-width:440px;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:15px 20px 15px 48px;
+    border-radius:16px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-size:15px;
+    font-family:'Manrope',sans-serif;
+    color:var(--text);
+    box-shadow: inset 0 1px 2px rgba(24,40,72,0.03);
+    transition: border-color .25s ease, box-shadow .25s ease;
+  }
+  .search-wrap input:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,161,90,0.18);
+  }
+  .search-wrap .icon{
+    position:absolute; left:17px; top:50%; transform:translateY(-50%);
+    font-size:17px; opacity:.55; pointer-events:none;
+  }
+  .search-hint{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:8px;
+    padding-left:4px;
+  }
+
+  /* Illustration */
+  .illustration{
+    position:relative;
+    height:230px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .illustration svg{ width:100%; height:100%; max-width:340px; overflow:visible; }
+  .compass-needle{ transform-origin: 227px 96px; animation: spin 14s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .float-slow{ animation: floaty 6s ease-in-out infinite; }
+  .float-slow.d2{ animation-delay:.8s; }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
+
+  @media (max-width: 900px){
+    .topbar{ grid-template-columns:1fr; padding:30px 26px; }
+    .illustration{ height:170px; order:-1; }
+  }
+
+  /* ============ STATS ============ */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:18px;
+    margin-top:22px;
+  }
+  .stat-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding:20px 22px;
+    display:flex; align-items:center; gap:14px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .stat-card:hover{ transform:translateY(-3px); box-shadow: var(--shadow-md); }
+  .stat-icon{
+    width:46px; height:46px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:21px;
+    background: linear-gradient(150deg, var(--gold-light), var(--gold));
+    box-shadow: 0 6px 16px rgba(201,161,90,0.35);
+    flex-shrink:0;
+  }
+  .stat-card:nth-child(2) .stat-icon{ background:linear-gradient(150deg,#8aa0c9,var(--ink-2)); box-shadow:0 6px 16px rgba(35,58,99,0.30); }
+  .stat-card:nth-child(3) .stat-icon{ background:linear-gradient(150deg,var(--burgundy-light),var(--burgundy)); box-shadow:0 6px 16px rgba(124,37,64,0.30); }
+  .stat-num{ font-family:'PT Serif',serif; font-size:26px; font-weight:700; color:var(--ink); line-height:1; }
+  .stat-label{ font-size:13px; color:var(--text-muted); margin-top:3px; }
+
+  @media (max-width:640px){ .stats{ grid-template-columns:1fr; } }
+
+  /* ============ MAIN LAYOUT ============ */
+  .layout{
+    display:grid;
+    grid-template-columns: 280px 1fr;
+    gap:24px;
+    margin-top:26px;
+    align-items:start;
+  }
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* Sidebar */
+  .sidebar{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding:22px;
+    box-shadow: var(--shadow-sm);
+    position:sticky;
+    top:20px;
+  }
+  @media (max-width:900px){ .sidebar{ position:static; } }
+
+  .sidebar-title{
+    font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--text-muted); font-weight:700;
+    display:flex; align-items:center; gap:8px;
+    margin:2px 0 16px;
+  }
+
+  .class-list{ display:flex; flex-direction:column; gap:6px; }
+  @media (max-width:900px){ .class-list{ flex-direction:row; flex-wrap:wrap; } }
+
+  .class-btn{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:13px 16px;
+    border-radius:14px;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--text);
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+    text-align:left;
+    transition: background .22s ease, color .22s ease, transform .22s ease, border-color .22s ease;
+  }
+  .class-btn .num{
+    font-family:'PT Serif',serif; font-style:italic; color:var(--text-muted); font-weight:400; font-size:14px;
+  }
+  .class-btn:hover{
+    background:var(--paper-2);
+    transform:translateX(3px);
+  }
+  .class-btn.active{
+    background: linear-gradient(120deg, var(--ink) 0%, var(--ink-2) 100%);
+    color:#fff;
+    box-shadow: 0 8px 20px rgba(24,40,72,0.28);
+  }
+  .class-btn.active .num{ color:var(--gold-light); }
+
+  /* Content column */
+  .content-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding:34px 38px 30px;
+    box-shadow: var(--shadow-sm);
+    min-height:420px;
+  }
+  @media (max-width:640px){ .content-card{ padding:22px 18px 24px; } }
+
+  .content-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+    padding-bottom:20px;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .content-head .eyebrow{
+    font-size:12.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; margin-bottom:8px;
+  }
+  .content-head h2{
+    font-size:clamp(24px,3vw,32px);
+    color:var(--ink); margin:0;
+    font-weight:700;
+  }
+  .content-head .sub{ color:var(--text-muted); font-size:14.5px; margin-top:8px; }
+
+  .chapter-count-pill{
+    flex-shrink:0;
+    background:var(--paper-2);
+    border-radius:999px;
+    padding:8px 16px;
+    font-size:13px;
+    color:var(--ink-2);
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  /* Accordion / Chapters */
+  .chapter{
+    border:1px solid var(--line);
+    border-radius: var(--radius-md);
+    margin-bottom:14px;
+    overflow:hidden;
+    transition: box-shadow .3s ease, border-color .3s ease;
+    background:#fff;
+  }
+  .chapter.open{ box-shadow: var(--shadow-md); border-color: rgba(201,161,90,0.4); }
+
+  .chapter-head{
+    display:flex; align-items:center; gap:16px;
+    padding:18px 20px;
+    cursor:pointer;
+    background: linear-gradient(120deg, #fff, var(--paper-2) 140%);
+    user-select:none;
+  }
+  .chapter-roman{
+    font-family:'PT Serif',serif; font-style:italic;
+    font-size:22px; color:var(--gold);
+    width:42px; text-align:center; flex-shrink:0;
+  }
+  .chapter-titles{ flex:1; min-width:0; }
+  .chapter-titles .ctitle{
+    font-family:'PT Serif',serif;
+    font-size:18px; font-weight:700; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .chapter-titles .cmeta{ font-size:12.5px; color:var(--text-muted); margin-top:3px; }
+  .chapter-toggle{
+    flex-shrink:0;
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--ink-2);
+    font-size:13px;
+    transition: transform .35s cubic-bezier(.4,0,.2,1), background .25s ease, color .25s ease;
+  }
+  .chapter.open .chapter-toggle{
+    transform: rotate(180deg);
+    background: var(--ink); color:#fff; border-color:var(--ink);
+  }
+
+  .chapter-body{
+    max-height:0;
+    overflow:hidden;
+    transition: max-height .45s cubic-bezier(.4,0,.2,1);
+  }
+  .chapter-body-inner{
+    padding: 4px 18px 20px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+
+  /* Lesson card */
+  .lesson{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background: var(--paper);
+    transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s ease, background .28s ease, border-color .28s ease;
+    position:relative;
+  }
+  .lesson:hover{
+    transform: translateY(-3px) scale(1.012);
+    box-shadow: var(--shadow-md);
+    background:#fff;
+    border-color: rgba(201,161,90,0.5);
+  }
+  .lesson-icon{
+    font-size:19px;
+    width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:11px;
+    background:#fff;
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .lesson-title{
+    flex:1; min-width:0;
+    font-size:14.5px; font-weight:600; color:var(--text);
+  }
+  .lesson-arrow{
+    font-size:15px; color:var(--gold);
+    opacity:0; transform:translateX(-6px);
+    transition: opacity .25s ease, transform .25s ease;
+    flex-shrink:0;
+  }
+  .lesson:hover .lesson-arrow{ opacity:1; transform:translateX(0); }
+
+  .lesson-open-btn{
+    flex-shrink:0;
+    font-size:12.5px; font-weight:700;
+    color:#fff;
+    background: linear-gradient(120deg, var(--burgundy), var(--burgundy-light));
+    padding:0 14px;
+    height:0;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    white-space:nowrap;
+    opacity:0;
+    overflow:hidden;
+    transition: opacity .25s ease, height .25s ease, padding .25s ease, transform .25s ease;
+  }
+  .lesson:hover .lesson-open-btn{
+    opacity:1; height:34px; padding:0 16px;
+  }
+  .lesson-open-btn:hover{ transform:scale(1.04); }
+
+  .lesson.dim{ opacity:.32; filter:grayscale(.3); }
+  .chapter.dim-all{ opacity:.4; }
+
+  .lesson-mark{ background: rgba(201,161,90,0.35); border-radius:3px; padding:0 1px; }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-muted);
+  }
+  .empty-state .big{ font-size:40px; margin-bottom:14px; }
+
+  /* Footer */
+  footer{
+    margin-top:40px;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:13.5px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+  }
+  footer .fmark{ color:var(--gold); }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div>
+      <div class="brand-eyebrow">✦ Электронный учебник нового поколения</div>
+      <h1>📚 История <span class="accent">на пальцах</span></h1>
+      <p class="lead">Современные материалы по истории для учителей, родителей и школьников — от 5 до 11 класса, собранные в одну понятную навигацию.</p>
+
+      <div class="search-wrap">
+        <span class="icon">🔎</span>
+        <input id="searchInput" type="text" placeholder="Найти тему, например «Древние»…" autocomplete="off">
+      </div>
+      <div class="search-hint">Поиск ищет по параграфам открытого класса и подсвечивает совпадения</div>
+    </div>
+
+    <div class="illustration">
+      <svg viewBox="0 0 320 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- map -->
+        <g class="float-slow">
+          <rect x="118" y="18" width="150" height="108" rx="10" transform="rotate(8 118 18)" fill="#F1E4C4" stroke="#C9A15A" stroke-width="2"/>
+          <path d="M140 40 Q170 55 160 80 T190 100" stroke="#7C2540" stroke-width="1.6" fill="none" stroke-dasharray="4 3" transform="rotate(8 118 18)"/>
+          <circle cx="150" cy="45" r="3" fill="#7C2540" transform="rotate(8 118 18)"/>
+          <circle cx="195" cy="98" r="3" fill="#7C2540" transform="rotate(8 118 18)"/>
+        </g>
+        <!-- book -->
+        <g class="float-slow d2">
+          <path d="M40 150 C40 145 44 141 49 141 H108 V196 H49 C44 196 40 192 40 187 Z" fill="#182848"/>
+          <path d="M176 150 C176 145 172 141 167 141 H108 V196 H167 C172 196 176 192 176 187 Z" fill="#233a63"/>
+          <path d="M108 141 V196" stroke="#E7CE9B" stroke-width="1.4"/>
+          <line x1="52" y1="153" x2="98" y2="153" stroke="#8aa0c9" stroke-width="1.4"/>
+          <line x1="52" y1="163" x2="98" y2="163" stroke="#8aa0c9" stroke-width="1.4"/>
+          <line x1="52" y1="173" x2="92" y2="173" stroke="#8aa0c9" stroke-width="1.4"/>
+        </g>
+        <!-- scroll -->
+        <g>
+          <rect x="182" y="120" width="86" height="52" rx="8" fill="#FBF6E9" stroke="#C9A15A" stroke-width="2"/>
+          <circle cx="182" cy="146" r="9" fill="#F1E4C4" stroke="#C9A15A" stroke-width="2"/>
+          <circle cx="268" cy="146" r="9" fill="#F1E4C4" stroke="#C9A15A" stroke-width="2"/>
+          <line x1="198" y1="134" x2="252" y2="134" stroke="#B79A6E" stroke-width="1.4"/>
+          <line x1="198" y1="144" x2="252" y2="144" stroke="#B79A6E" stroke-width="1.4"/>
+          <line x1="198" y1="154" x2="238" y2="154" stroke="#B79A6E" stroke-width="1.4"/>
+        </g>
+        <!-- compass -->
+        <g>
+          <circle cx="227" cy="96" r="30" fill="#fff" stroke="#182848" stroke-width="2.5"/>
+          <circle cx="227" cy="96" r="23" fill="none" stroke="#C9A15A" stroke-width="1.2"/>
+          <g class="compass-needle">
+            <path d="M227 78 L233 96 L227 114 L221 96 Z" fill="#7C2540"/>
+          </g>
+          <circle cx="227" cy="96" r="3" fill="#182848"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <!-- ===================== STATS ===================== -->
+  <section class="stats">
+    <div class="stat-card">
+      <div class="stat-icon">📖</div>
+      <div><div class="stat-num" data-target="128">0</div><div class="stat-label">Материалов</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏛</div>
+      <div><div class="stat-num" data-target="16">0</div><div class="stat-label">Глав</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📚</div>
+      <div><div class="stat-num" data-target="7">0</div><div class="stat-label">Классов</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== MAIN LAYOUT ===================== -->
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">📚 Классы</div>
+      <div class="class-list" id="classList"></div>
+    </aside>
+
+    <section class="content-card" id="contentCard">
+      <!-- filled by JS -->
+    </section>
+  </div>
+
+  <footer>
+    <span class="fmark">©</span> История на пальцах — навигация по школьной программе.
+  </footer>
+
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const DATA = {
+  "5": {
+    title: "История Древнего мира",
+    subtitle: "От первых людей до заката античных цивилизаций",
+    chapters: [
+      { roman:"I", name:"Первобытное общество", items:[
+        {icon:"📖", title:"Введение"},
+        {icon:"🦴", title:"§1. Древнейшие люди"},
+        {icon:"🏹", title:"§2. Первобытные охотники и собиратели"},
+        {icon:"🎨", title:"§3. Верования и искусство"},
+        {icon:"🌾", title:"§4. Возникновение земледелия, скотоводства и ремесла"},
+      ]},
+      { roman:"II", name:"Древний Восток", items:[
+        {icon:"🏛", title:"§5. Древний Египет"},
+        {icon:"👑", title:"§6. Фараоны и пирамиды"},
+        {icon:"🏞", title:"§7. Древнее Междуречье"},
+        {icon:"⚖️", title:"§8. Законы царя Хаммурапи"},
+        {icon:"🐘", title:"§9. Древняя Индия и Китай"},
+      ]},
+      { roman:"III", name:"Древняя Греция", items:[
+        {icon:"🏝", title:"§10. Древнейшая Греция"},
+        {icon:"⚔️", title:"§11. Полисы Греции и борьба с персидским нашествием"},
+        {icon:"🏺", title:"§12. Возвышение Афин"},
+        {icon:"🏟", title:"§13. Олимпийские игры"},
+        {icon:"👑", title:"§14. Македонские завоевания"},
+      ]},
+      { roman:"IV", name:"Древний Рим", items:[
+        {icon:"🐺", title:"§15. Древнейший Рим"},
+        {icon:"⚔️", title:"§16. Завоевание Римом Италии"},
+        {icon:"🏛", title:"§17. Рим — сильнейшая держава Средиземноморья"},
+        {icon:"👑", title:"§18. Гражданские войны в Риме"},
+        {icon:"🏟", title:"§19. Расцвет и падение Римской империи"},
+      ]},
+    ]
+  },
+  "6": {
+    title: "История Средних веков и История России",
+    subtitle: "Раннее Средневековье и рождение Древнерусского государства",
+    chapters: [
+      { roman:"I", name:"Раннее Средневековье", items:[
+        {icon:"🗡", title:"§1. Великое переселение народов"},
+        {icon:"👑", title:"§2. Империя Карла Великого"},
+        {icon:"🏰", title:"§3. Феодальная раздробленность в Европе"},
+        {icon:"⛪", title:"§4. Возникновение и расцвет христианской церкви"},
+      ]},
+      { roman:"II", name:"История России с древности до XV века", items:[
+        {icon:"🌊", title:"§5. Восточные славяне"},
+        {icon:"👑", title:"§6. Образование Древнерусского государства"},
+        {icon:"☦️", title:"§7. Крещение Руси"},
+        {icon:"🛡", title:"§8. Раздробленность Руси"},
+        {icon:"🐎", title:"§9. Монгольское нашествие"},
+      ]},
+    ]
+  },
+  "7": {
+    title: "Новая история и История России XVI–XVII вв.",
+    subtitle: "Эпоха великих открытий, Реформации и первых Романовых",
+    chapters: [
+      { roman:"I", name:"Европа в начале Нового времени", items:[
+        {icon:"🚢", title:"§1. Великие географические открытия"},
+        {icon:"⛪", title:"§2. Реформация в Европе"},
+        {icon:"👑", title:"§3. Европейские государства в XVI–XVII веках"},
+        {icon:"⚔️", title:"§4. Английская революция"},
+      ]},
+      { roman:"II", name:"Россия в XVI–XVII веках", items:[
+        {icon:"👑", title:"§5. Правление Ивана Грозного"},
+        {icon:"⏳", title:"§6. Смутное время"},
+        {icon:"👑", title:"§7. Начало правления династии Романовых"},
+        {icon:"🌾", title:"§8. Народные движения XVII века"},
+      ]},
+    ]
+  },
+  "8": {
+    title: "Новая история и История России XVIII в.",
+    subtitle: "Век Просвещения, реформы Петра и правление Екатерины II",
+    chapters: [
+      { roman:"I", name:"Эпоха Просвещения", items:[
+        {icon:"💡", title:"§1. Век Просвещения в Европе"},
+        {icon:"🇫🇷", title:"§2. Французская революция"},
+        {icon:"👑", title:"§3. Государства Европы в XVIII веке"},
+      ]},
+      { roman:"II", name:"Россия в XVIII веке", items:[
+        {icon:"👑", title:"§4. Эпоха Петра Великого"},
+        {icon:"👑", title:"§5. Дворцовые перевороты"},
+        {icon:"👑", title:"§6. Правление Екатерины II"},
+        {icon:"⚔️", title:"§7. Внешняя политика России в XVIII веке"},
+      ]},
+    ]
+  },
+  "9": {
+    title: "Новая история и История России XIX — начала XX в.",
+    subtitle: "Наполеоновские войны, промышленный переворот и Великие реформы",
+    chapters: [
+      { roman:"I", name:"Мир в XIX веке", items:[
+        {icon:"⚔️", title:"§1. Наполеоновские войны"},
+        {icon:"🏭", title:"§2. Промышленная революция"},
+        {icon:"🌍", title:"§3. Колониальные империи"},
+      ]},
+      { roman:"II", name:"Россия в XIX — начале XX века", items:[
+        {icon:"⚔️", title:"§4. Отечественная война 1812 года"},
+        {icon:"⛓", title:"§5. Отмена крепостного права"},
+        {icon:"🏭", title:"§6. Реформы Александра II"},
+        {icon:"⚡", title:"§7. Революция 1905 года"},
+      ]},
+    ]
+  },
+  "10": {
+    title: "История России и Всеобщая история. XX век",
+    subtitle: "От Первой мировой войны до начала холодной войны",
+    chapters: [
+      { roman:"I", name:"Россия в начале XX века", items:[
+        {icon:"⚔️", title:"§1. Первая мировая война"},
+        {icon:"🚩", title:"§2. Революция 1917 года"},
+        {icon:"⚒", title:"§3. Гражданская война и образование СССР"},
+      ]},
+      { roman:"II", name:"Всеобщая история XX века", items:[
+        {icon:"🌍", title:"§4. Мир между двумя войнами"},
+        {icon:"⚔️", title:"§5. Вторая мировая война"},
+        {icon:"🕊", title:"§6. Холодная война"},
+      ]},
+    ]
+  },
+  "11": {
+    title: "История России и мир во второй половине XX — XXI в.",
+    subtitle: "От оттепели и перестройки до современной России",
+    chapters: [
+      { roman:"I", name:"СССР во второй половине XX века", items:[
+        {icon:"🚀", title:"§1. Оттепель и научно-технический прогресс"},
+        {icon:"🏭", title:"§2. Эпоха развитого социализма"},
+        {icon:"🔨", title:"§3. Перестройка"},
+      ]},
+      { roman:"II", name:"Современная Россия и мир", items:[
+        {icon:"🇷🇺", title:"§4. Становление новой России"},
+        {icon:"🌐", title:"§5. Россия в XXI веке"},
+        {icon:"🌍", title:"§6. Современный мир и глобальные вызовы"},
+      ]},
+    ]
+  },
+};
+
+const GRADE_ORDER = ["5","6","7","8","9","10","11"];
+let currentGrade = "5";
+let openChapterIdx = 0;
+
+/* ===================== RENDER SIDEBAR ===================== */
+const classListEl = document.getElementById('classList');
+GRADE_ORDER.forEach(g=>{
+  const btn = document.createElement('button');
+  btn.className = 'class-btn' + (g===currentGrade ? ' active' : '');
+  btn.innerHTML = `<span>${g} класс</span><span class="num">${toRoman(g)}</span>`;
+  btn.addEventListener('click', ()=>{
+    currentGrade = g;
+    openChapterIdx = 0;
+    document.querySelectorAll('.class-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('searchInput').value = '';
+    renderContent();
+  });
+  classListEl.appendChild(btn);
+});
+
+function toRoman(n){
+  const map = {5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X",11:"XI"};
+  return map[n] || "";
+}
+
+/* ===================== RENDER CONTENT ===================== */
+const contentCard = document.getElementById('contentCard');
+
+function renderContent(query=''){
+  const grade = DATA[currentGrade];
+  const q = query.trim().toLowerCase();
+
+  let chaptersHtml = grade.chapters.map((ch, idx)=>{
+    const isOpen = idx === openChapterIdx;
+
+    const itemsMatch = ch.items.map(it=>{
+      const matches = !q || it.title.toLowerCase().includes(q);
+      return {...it, matches};
+    });
+    const chapterHasMatch = !q || itemsMatch.some(it=>it.matches);
+    const forceOpen = q && chapterHasMatch;
+
+    const itemsHtml = itemsMatch.map(it=>{
+      const label = q && it.matches ? highlight(it.title, q) : it.title;
+      return `
+        <div class="lesson ${q && !it.matches ? 'dim' : ''}">
+          <div class="lesson-icon">${it.icon}</div>
+          <div class="lesson-title">${label}</div>
+          <a href="#" class="lesson-open-btn">Открыть материал</a>
+          <span class="lesson-arrow">→</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="chapter ${(isOpen || forceOpen) ? 'open' : ''} ${q && !chapterHasMatch ? 'dim-all' : ''}" data-idx="${idx}">
+        <div class="chapter-head" onclick="toggleChapter(${idx})">
+          <div class="chapter-roman">${ch.roman}</div>
+          <div class="chapter-titles">
+            <div class="ctitle">🏺 Глава ${ch.roman}. ${ch.name}</div>
+            <div class="cmeta">${ch.items.length} материалов</div>
+          </div>
+          <div class="chapter-toggle">▼</div>
+        </div>
+        <div class="chapter-body" style="max-height:${(isOpen || forceOpen) ? '900px' : '0'}">
+          <div class="chapter-body-inner">${itemsHtml}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const anyMatch = !q || grade.chapters.some(ch=>ch.items.some(it=>it.title.toLowerCase().includes(q)));
+
+  contentCard.innerHTML = `
+    <div class="content-head">
+      <div>
+        <div class="eyebrow">${currentGrade} класс</div>
+        <h2>${grade.title}</h2>
+        <div class="sub">${grade.subtitle}</div>
+      </div>
+      <div class="chapter-count-pill">${grade.chapters.length} ${pluralChapters(grade.chapters.length)}</div>
+    </div>
+    ${anyMatch ? chaptersHtml : `
+      <div class="empty-state">
+        <div class="big">🔍</div>
+        <div>По запросу «${escapeHtml(query)}» ничего не найдено в ${currentGrade} классе</div>
+      </div>`}
+  `;
+}
+
+function pluralChapters(n){
+  const mod10 = n % 10, mod100 = n % 100;
+  if(mod10===1 && mod100!==11) return "глава";
+  if([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return "главы";
+  return "глав";
+}
+
+function toggleChapter(idx){
+  openChapterIdx = (openChapterIdx === idx) ? -1 : idx;
+  renderContent(document.getElementById('searchInput').value);
+}
+
+function highlight(text, q){
+  const i = text.toLowerCase().indexOf(q);
+  if(i === -1) return text;
+  return text.slice(0,i) + '<span class="lesson-mark">' + text.slice(i, i+q.length) + '</span>' + text.slice(i+q.length);
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  renderContent(e.target.value);
+});
+
+renderContent();
+
+/* ===================== STAT COUNTERS ===================== */
+document.querySelectorAll('.stat-num').forEach(el=>{
+  const target = parseInt(el.dataset.target, 10);
+  let current = 0;
+  const duration = 900;
+  const start = performance.now();
+  function step(now){
+    const p = Math.min(1, (now-start)/duration);
+    const eased = 1 - Math.pow(1-p, 3);
+    current = Math.round(target * eased);
+    el.textContent = current;
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+});
+</script>
+</body>
+</html>
