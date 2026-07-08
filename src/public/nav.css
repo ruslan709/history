@@ -137,6 +137,8 @@
 .lesson-arrow{ font-size:15px; color:var(--gold); opacity:0; transform:translateX(-6px); transition:opacity .25s ease, transform .25s ease; flex-shrink:0; }
 .lesson.clickable:hover .lesson-arrow{ opacity:1; transform:translateX(0); }
 .lesson.dim{ opacity:.32; filter:grayscale(.3); }
+.lesson.lesson-just{ animation: lessonJust 1.6s ease; }
+@keyframes lessonJust{ 0%,100%{ box-shadow:none; border-color:var(--line); } 30%{ box-shadow:0 0 0 4px rgba(201,161,90,0.35); border-color:var(--gold); } }
 .chapter.dim-all{ opacity:.4; }
 .lesson-mark{ background:rgba(201,161,90,0.35); border-radius:3px; padding:0 1px; }
 
