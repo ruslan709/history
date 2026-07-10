@@ -51,6 +51,55 @@
 /* ===== Иконки статистики ===== */
 .stat-icon svg{ width:24px; height:24px; color:#fff; }
 
+/* ===== Окно приглашения подписаться ===== */
+.jm-overlay{
+  position:fixed; inset:0; z-index:200;
+  background:rgba(24,40,72,0.55); backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  animation: jmFade .25s ease;
+}
+@keyframes jmFade{ from{ opacity:0; } to{ opacity:1; } }
+.jm-card{
+  position:relative; width:100%; max-width:420px; text-align:center;
+  background:var(--card); border-radius:24px; padding:34px 30px 26px;
+  box-shadow:0 30px 70px rgba(24,40,72,0.4);
+  border:1px solid var(--line);
+  animation: jmPop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes jmPop{ from{ transform:translateY(16px) scale(.96); opacity:0; } to{ transform:none; opacity:1; } }
+.jm-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:5px; border-radius:24px 24px 0 0;
+  background:linear-gradient(90deg, var(--ink), var(--gold) 50%, var(--burgundy));
+}
+.jm-close{
+  position:absolute; top:12px; right:14px; width:34px; height:34px; border-radius:50%;
+  border:1px solid var(--line); background:#fff; color:var(--text-muted);
+  font-size:20px; line-height:1; cursor:pointer; transition:background .2s ease;
+}
+.jm-close:hover{ background:var(--paper-2); }
+.jm-badge{
+  width:74px; height:74px; margin:6px auto 16px; border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(150deg,#eef2fb,#dbe4f6);
+  box-shadow:0 10px 24px rgba(47,123,255,0.22);
+}
+.jm-badge .max-logo{ width:56px; height:56px; border-radius:15px; object-fit:cover; }
+.jm-title{ margin:0 0 10px; font-size:23px; color:var(--ink); }
+.jm-sub{ margin:0 0 22px; font-size:14.5px; line-height:1.55; color:var(--text-muted); }
+.jm-btn{
+  display:block; width:100%; padding:16px; border-radius:14px;
+  background:linear-gradient(120deg, var(--burgundy), var(--burgundy-light));
+  color:#fff; font-weight:800; font-size:16.5px;
+  box-shadow:0 10px 24px rgba(124,37,64,0.32);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.jm-btn:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(124,37,64,0.4); }
+.jm-later{
+  margin-top:14px; background:none; border:none; cursor:pointer;
+  color:var(--text-muted); font-size:13.5px; font-weight:600; text-decoration:underline;
+}
+.jm-later:hover{ color:var(--ink-2); }
+
 /* ===== Слоган ===== */
 .tagline{
   font-family:'PT Serif',serif; font-style:italic; font-weight:700;

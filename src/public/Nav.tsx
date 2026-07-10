@@ -140,6 +140,12 @@ export default function Nav() {
   const [gradeId, setGradeId] = useState<string>('')
   const [openSection, setOpenSection] = useState<string>('')
   const [query, setQuery] = useState('')
+  const [showJoin, setShowJoin] = useState(false)
+
+  function closeJoin() {
+    setShowJoin(false)
+    localStorage.setItem('istoriya_join_seen', '1')
+  }
 
   useEffect(() => {
     loadPublic()
@@ -154,6 +160,8 @@ export default function Nav() {
           const sec = g.sections.find((s) => s.id === savedSection) ?? g.sections[0]
           setOpenSection(sec?.id ?? '')
         }
+        // Окно с приглашением подписаться — один раз на устройство
+        if (!localStorage.getItem('istoriya_join_seen')) setShowJoin(true)
         // Возврат к последней открытой теме — чтобы смотреть соседние темы подряд
         const savedTopic = localStorage.getItem('istoriya_nav_topic')
         if (savedTopic) {
@@ -364,6 +372,21 @@ export default function Nav() {
       <footer className="nav-footer">
         <span className="fmark">©</span> История на пальцах — навигация по школьной программе.
       </footer>
+
+      {showJoin && (
+        <div className="jm-overlay" onClick={closeJoin}>
+          <div className="jm-card" onClick={(e) => e.stopPropagation()}>
+            <button className="jm-close" onClick={closeJoin} aria-label="Закрыть">×</button>
+            <div className="jm-badge"><MaxIcon /></div>
+            <h3 className="jm-title">Подпишитесь на канал MAX</h3>
+            <p className="jm-sub">Все материалы — в нашем канале. Это бесплатно и в один тап. После подписки открываются все темы навигатора.</p>
+            <a className="jm-btn" href={CHANNEL_INVITE} target="_blank" rel="noopener noreferrer" onClick={closeJoin}>
+              Подписаться на канал →
+            </a>
+            <button className="jm-later" onClick={closeJoin}>Уже подписан(а) · закрыть</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
