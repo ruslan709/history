@@ -130,3 +130,11 @@ input,select,textarea{ font-family:inherit; }
 :root[data-theme="dark"] .brand-eyebrow{ background:rgba(201,161,90,0.14); color:var(--gold-light); }
 :root[data-theme="dark"] .nav-toast{ background:#2a3346; }
 :root[data-theme="dark"] ::selection{ background:rgba(201,161,90,0.4); }
+/* Тёмная тема: элементы, где переменная --ink была фоном (иначе светлая плашка) */
+:root[data-theme="dark"] .class-btn.active{
+  background:linear-gradient(120deg,#2f4b7a,#3d5f96); color:#fff;
+  box-shadow:0 8px 20px rgba(0,0,0,0.45);
+}
+:root[data-theme="dark"] .class-btn{ color:var(--text); }
+:root[data-theme="dark"] .chapter.open .chapter-toggle{ background:#3d5f96; border-color:#3d5f96; color:#fff; }
+:root[data-theme="dark"] .stat-card:nth-child(2) .stat-icon{ background:linear-gradient(150deg,#5a6f9e,#33507e); }
