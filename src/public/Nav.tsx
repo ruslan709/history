@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Content, Grade } from '../types'
+import type { Content, Grade, Section, Topic } from '../types'
 import { ROMAN } from '../types'
 import { loadPublic } from '../github'
 import { computeStats, pluralChapters } from '../utils'
@@ -141,10 +141,44 @@ export default function Nav() {
   const [openSection, setOpenSection] = useState<string>('')
   const [query, setQuery] = useState('')
   const [showJoin, setShowJoin] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
+  const [dark, setDark] = useState(false)
+  const [toast, setToast] = useState('')
 
   function closeJoin() {
     setShowJoin(false)
     localStorage.setItem('istoriya_join_seen', '1')
+  }
+
+  // Тёмная тема
+  useEffect(() => {
+    const saved = localStorage.getItem('istoriya_theme')
+    const isDark = saved === 'dark'
+    setDark(isDark)
+    document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+  }, [])
+  function toggleTheme() {
+    setDark((d) => {
+      const next = !d
+      document.documentElement.dataset.theme = next ? 'dark' : 'light'
+      localStorage.setItem('istoriya_theme', next ? 'dark' : 'light')
+      return next
+    })
+  }
+
+  // Поделиться
+  async function doShare() {
+    const url = window.location.href.split('#')[0]
+    const data = { title: 'История на пальцах', text: 'Навигатор по материалам по истории 5–11 классов', url }
+    try {
+      if (navigator.share) { await navigator.share(data); return }
+      await navigator.clipboard.writeText(url)
+      showToast('Ссылка скопирована ✓')
+    } catch { /* пользователь отменил — ничего */ }
+  }
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 2500)
   }
 
   useEffect(() => {
@@ -221,14 +255,49 @@ export default function Nav() {
     )
   }
 
-  const anyMatch =
-    !q || grade.sections.some((s) => s.topics.some((t) => t.title.toLowerCase().includes(q)))
+  function renderLesson(t: Topic, subLabel?: string) {
+    const clickable = !!t.url
+    const cls = 'lesson' + (clickable ? ' clickable' : '')
+    const inner = (
+      <>
+        <div className="lesson-icon">{t.icon}</div>
+        <div className="lesson-title">
+          {highlight(t.title, q)}
+          {subLabel && <span className="lesson-sub">{subLabel}</span>}
+        </div>
+        {clickable ? <span className="lesson-arrow">↗</span> : <span className="lesson-soon">скоро</span>}
+      </>
+    )
+    return clickable ? (
+      <a key={t.id} id={`t-${t.id}`} className={cls} href={t.url} onClick={() => localStorage.setItem('istoriya_nav_topic', t.id)}>{inner}</a>
+    ) : (
+      <div key={t.id} className={cls}>{inner}</div>
+    )
+  }
+
+  const searchGroups = q
+    ? content.grades
+        .map((g) => {
+          const hits: { t: Topic; sec: Section }[] = []
+          g.sections.forEach((s) => s.topics.forEach((t) => {
+            if (t.title.toLowerCase().includes(q)) hits.push({ t, sec: s })
+          }))
+          return { g, hits }
+        })
+        .filter((x) => x.hits.length > 0)
+    : []
+  const searchTotal = searchGroups.reduce((a, x) => a + x.hits.length, 0)
 
   let lastCourse = ' '
 
   return (
     <div className="shell">
       <header className="topbar">
+        <div className="top-actions">
+          <button className="ta-btn" onClick={toggleTheme} title="Светлая/тёмная тема" aria-label="Сменить тему">{dark ? '☀️' : '🌙'}</button>
+          <button className="ta-btn" onClick={doShare} title="Поделиться" aria-label="Поделиться">🔗</button>
+          <button className="ta-btn" onClick={() => setShowAbout(true)} title="Как пользоваться" aria-label="О проекте">ℹ️</button>
+        </div>
         <div>
           <div className="brand-eyebrow">✦ Электронное пособие нового поколения</div>
           <h1>📚 История <span className="accent">на пальцах</span></h1>
@@ -247,7 +316,7 @@ export default function Nav() {
               autoComplete="off"
             />
           </div>
-          <div className="search-hint">Поиск идёт по параграфам открытого класса и подсвечивает совпадения</div>
+          <div className="search-hint">Поиск идёт сразу по всем классам и подсвечивает совпадения</div>
         </div>
         <BrandEmblem />
       </header>
@@ -266,6 +335,18 @@ export default function Nav() {
           <div><div className="stat-num"><StatNum target={stats.grades} /></div><div className="stat-label">Классов</div></div>
         </div>
       </section>
+
+      {stats.topics > 0 && (
+        <section className="progress-card">
+          <div className="progress-top">
+            <span className="progress-label">📈 Наполнение материалами</span>
+            <span className="progress-val">Готово {stats.links} из {stats.topics} тем · {Math.round((stats.links / stats.topics) * 100)}%</span>
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${Math.round((stats.links / stats.topics) * 100)}%` }} />
+          </div>
+        </section>
+      )}
 
       <a className="join-cta" href={CHANNEL_INVITE} target="_blank" rel="noopener noreferrer">
         <span className="jc-glow" aria-hidden="true"></span>
@@ -295,76 +376,75 @@ export default function Nav() {
         </aside>
 
         <section className="content-card">
-          <div className="content-head">
-            <div>
-              <div className="eyebrow">{grade.id} класс</div>
-              <h2>{grade.title}</h2>
-              <div className="sub">{grade.subtitle}</div>
-            </div>
-            <div className="chapter-count-pill">
-              {grade.sections.length} {pluralChapters(grade.sections.length)}
-            </div>
-          </div>
-
-          {!anyMatch ? (
-            <div className="empty-state">
-              <div className="big">🔍</div>
-              <div>По запросу «{query}» ничего не найдено в {grade.id} классе</div>
-            </div>
-          ) : (
-            grade.sections.map((sec) => {
-              const itemsMatch = sec.topics.map((t) => ({ ...t, matches: !q || t.title.toLowerCase().includes(q) }))
-              const chapterHasMatch = !q || itemsMatch.some((t) => t.matches)
-              const forceOpen = !!q && chapterHasMatch
-              const isOpen = openSection === sec.id
-              const showCourseHeading = sec.course && sec.course !== lastCourse
-              if (sec.course) lastCourse = sec.course
-
-              return (
-                <div key={sec.id}>
-                  {showCourseHeading && <div className="course-heading">📘 {sec.course}</div>}
-                  <div className={'chapter' + (isOpen || forceOpen ? ' open' : '') + (q && !chapterHasMatch ? ' dim-all' : '')}>
-                    <div className="chapter-head" onClick={() => toggleSection(sec.id)}>
-                      <div className="chapter-roman">{sec.roman}</div>
-                      <div className="chapter-titles">
-                        <div className="ctitle">📜 Глава {sec.roman}. {sec.name}</div>
-                        <div className="cmeta">{sec.topics.length} материалов</div>
-                      </div>
-                      <div className="chapter-toggle">▼</div>
+          {q ? (
+            /* ===== Глобальный поиск по всем классам ===== */
+            <>
+              <div className="content-head">
+                <div>
+                  <div className="eyebrow">Поиск</div>
+                  <h2>Результаты по «{query}»</h2>
+                  <div className="sub">{searchTotal > 0 ? `Найдено ${searchTotal} — во всех классах` : 'Ничего не найдено'}</div>
+                </div>
+              </div>
+              {searchTotal === 0 ? (
+                <div className="empty-state">
+                  <div className="big">🔍</div>
+                  <div>По запросу «{query}» ничего не найдено</div>
+                </div>
+              ) : (
+                searchGroups.map(({ g, hits }) => (
+                  <div key={g.id} className="search-group">
+                    <div className="course-heading">🎓 {g.id} класс — {g.title}</div>
+                    <div className="search-hits">
+                      {hits.map(({ t, sec }) => renderLesson(t, `Глава ${sec.roman}. ${sec.name}`))}
                     </div>
-                    <div className="chapter-body" style={{ maxHeight: isOpen || forceOpen ? '2000px' : '0' }}>
-                      <div className="chapter-body-inner">
-                        {sec.topics.length === 0 && (
-                          <div className="lesson"><div className="lesson-title" style={{ color: 'var(--text-muted)' }}>Материалы скоро появятся</div></div>
-                        )}
-                        {itemsMatch.map((t) => {
-                          const clickable = !!t.url
-                          const cls = 'lesson' + (clickable ? ' clickable' : '') + (q && !t.matches ? ' dim' : '')
-                          const inner = (
-                            <>
-                              <div className="lesson-icon">{t.icon}</div>
-                              <div className="lesson-title">{highlight(t.title, q)}</div>
-                              {clickable ? <span className="lesson-arrow">↗</span> : <span className="lesson-soon">скоро</span>}
-                            </>
-                          )
-                          return clickable ? (
-                            <a
-                              key={t.id}
-                              id={`t-${t.id}`}
-                              className={cls}
-                              href={t.url}
-                              onClick={() => localStorage.setItem('istoriya_nav_topic', t.id)}
-                            >{inner}</a>
-                          ) : (
-                            <div key={t.id} className={cls}>{inner}</div>
-                          )
-                        })}
+                  </div>
+                ))
+              )}
+            </>
+          ) : (
+            /* ===== Обычный вид: выбранный класс ===== */
+            <>
+              <div className="content-head">
+                <div>
+                  <div className="eyebrow">{grade.id} класс</div>
+                  <h2>{grade.title}</h2>
+                  <div className="sub">{grade.subtitle}</div>
+                </div>
+                <div className="chapter-count-pill">
+                  {grade.sections.length} {pluralChapters(grade.sections.length)}
+                </div>
+              </div>
+
+              {grade.sections.map((sec) => {
+                const isOpen = openSection === sec.id
+                const showCourseHeading = sec.course && sec.course !== lastCourse
+                if (sec.course) lastCourse = sec.course
+                return (
+                  <div key={sec.id}>
+                    {showCourseHeading && <div className="course-heading">📘 {sec.course}</div>}
+                    <div className={'chapter' + (isOpen ? ' open' : '')}>
+                      <div className="chapter-head" onClick={() => toggleSection(sec.id)}>
+                        <div className="chapter-roman">{sec.roman}</div>
+                        <div className="chapter-titles">
+                          <div className="ctitle">📜 Глава {sec.roman}. {sec.name}</div>
+                          <div className="cmeta">{sec.topics.length} материалов</div>
+                        </div>
+                        <div className="chapter-toggle">▼</div>
+                      </div>
+                      <div className="chapter-body" style={{ maxHeight: isOpen ? '3000px' : '0' }}>
+                        <div className="chapter-body-inner">
+                          {sec.topics.length === 0 && (
+                            <div className="lesson"><div className="lesson-title" style={{ color: 'var(--text-muted)' }}>Материалы скоро появятся</div></div>
+                          )}
+                          {sec.topics.map((t) => renderLesson(t))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )
-            })
+                )
+              })}
+            </>
           )}
         </section>
       </div>
@@ -387,6 +467,27 @@ export default function Nav() {
           </div>
         </div>
       )}
+
+      {showAbout && (
+        <div className="jm-overlay" onClick={() => setShowAbout(false)}>
+          <div className="jm-card about-card" onClick={(e) => e.stopPropagation()}>
+            <button className="jm-close" onClick={() => setShowAbout(false)} aria-label="Закрыть">×</button>
+            <div className="about-emoji">📚🧭</div>
+            <h3 className="jm-title">Как пользоваться навигатором</h3>
+            <ol className="about-steps">
+              <li><b>Выберите класс</b> слева (с 5 по 11).</li>
+              <li><b>Откройте главу</b> и найдите нужную тему (§).</li>
+              <li><b>Нажмите на тему</b> — откроется пост с материалами в канале MAX.</li>
+              <li>Материалы доступны <b>подписчикам канала</b> — подпишитесь в один тап.</li>
+            </ol>
+            <p className="about-note">💡 Совет: пользуйтесь <b>поиском</b> вверху — он ищет тему сразу по всем классам. А кнопка «Назад» в браузере вернёт вас на то же место.</p>
+            <a className="jm-btn" href={CHANNEL_INVITE} target="_blank" rel="noopener noreferrer" onClick={() => setShowAbout(false)}>Подписаться на канал →</a>
+            <button className="jm-later" onClick={() => setShowAbout(false)}>Закрыть</button>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="nav-toast">{toast}</div>}
     </div>
   )
 }

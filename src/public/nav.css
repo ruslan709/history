@@ -261,3 +261,49 @@
 
 .nav-footer{ margin-top:40px; text-align:center; color:var(--text-muted); font-size:13.5px; padding-top:24px; border-top:1px solid var(--line); }
 .nav-footer .fmark{ color:var(--gold); }
+
+/* ===== Кнопки-действия в шапке ===== */
+.top-actions{ position:absolute; top:16px; right:18px; z-index:3; display:flex; gap:8px; }
+.ta-btn{
+  width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:var(--card);
+  font-size:17px; cursor:pointer; box-shadow:var(--shadow-sm);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.ta-btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
+@media (max-width:640px){ .top-actions{ top:12px; right:12px; } .ta-btn{ width:36px; height:36px; font-size:16px; } }
+
+/* ===== Прогресс наполнения ===== */
+.progress-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md);
+  padding:16px 20px; box-shadow:var(--shadow-sm); margin-top:18px;
+}
+.progress-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.progress-label{ font-weight:700; color:var(--ink); font-size:14.5px; }
+.progress-val{ font-size:13.5px; color:var(--text-muted); font-weight:600; }
+.progress-track{ height:12px; border-radius:999px; background:var(--paper-2); overflow:hidden; }
+.progress-fill{
+  height:100%; border-radius:999px; min-width:8px;
+  background:linear-gradient(90deg, var(--gold), var(--burgundy));
+  transition:width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* ===== Результаты поиска ===== */
+.search-group{ margin-bottom:18px; }
+.search-hits{ display:flex; flex-direction:column; gap:10px; }
+.lesson-sub{ display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-top:2px; }
+
+/* ===== Окно «Как пользоваться» ===== */
+.about-card{ text-align:left; }
+.about-emoji{ font-size:34px; text-align:center; margin-bottom:8px; }
+.about-card .jm-title{ text-align:center; }
+.about-steps{ margin:0 0 14px; padding-left:22px; font-size:14.5px; line-height:1.6; color:var(--text); }
+.about-steps li{ margin:6px 0; }
+.about-note{ background:var(--paper-2); border-radius:12px; padding:12px 14px; font-size:13.5px; color:var(--text); margin:0 0 18px; line-height:1.5; }
+
+/* ===== Тост ===== */
+.nav-toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:250;
+  background:var(--ink); color:#fff; padding:12px 20px; border-radius:999px;
+  font-size:14px; font-weight:600; box-shadow:var(--shadow-lg); animation: jmFade .2s ease;
+}

@@ -97,3 +97,36 @@ input,select,textarea{ font-family:inherit; }
 @keyframes toastIn{ from{ transform:translateY(10px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
 
 @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+/* ==================== ТЁМНАЯ ТЕМА ==================== */
+:root[data-theme="dark"]{
+  --paper:#121722;
+  --paper-2:#1b2230;
+  --ink:#eef2fb;
+  --ink-2:#cbd6ee;
+  --text:#e6e9f2;
+  --text-muted:#9aa3b8;
+  --card:#1a2130;
+  --line:rgba(255,255,255,0.09);
+  --shadow-sm:0 2px 10px rgba(0,0,0,0.40);
+  --shadow-md:0 10px 30px rgba(0,0,0,0.50);
+  --shadow-lg:0 24px 60px rgba(0,0,0,0.60);
+}
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(201,161,90,0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(124,37,64,0.14), transparent 55%),
+    var(--paper);
+}
+/* Поверхности, где раньше был жёстко белый фон */
+:root[data-theme="dark"] .topbar{ background:linear-gradient(155deg,#1c2536 0%, #161d29 100%); }
+:root[data-theme="dark"] .search-wrap input,
+:root[data-theme="dark"] .chapter,
+:root[data-theme="dark"] .lesson-icon,
+:root[data-theme="dark"] .jm-close,
+:root[data-theme="dark"] .ta-btn{ background:var(--card); }
+:root[data-theme="dark"] .chapter-head{ background:linear-gradient(120deg, var(--card), var(--paper-2)); }
+:root[data-theme="dark"] .lesson.clickable:hover{ background:var(--paper-2); }
+:root[data-theme="dark"] .brand-eyebrow{ background:rgba(201,161,90,0.14); color:var(--gold-light); }
+:root[data-theme="dark"] .nav-toast{ background:#2a3346; }
+:root[data-theme="dark"] ::selection{ background:rgba(201,161,90,0.4); }
