@@ -62,10 +62,12 @@ function BrandEmblem() {
   )
 }
 
-// Иконка канала MAX: пробуем public/max.png, иначе аккуратный SVG-значок.
+// Иконка канала MAX: пробуем max.png → max.webp → max.jpeg → max.jpg, иначе SVG-значок.
+const MAX_CANDIDATES = ['max.png', 'max.webp', 'max.jpeg', 'max.jpg']
 function MaxIcon() {
-  const [ok, setOk] = useState(true)
-  if (ok) return <img className="max-logo" src={`${import.meta.env.BASE_URL}max.png`} alt="MAX" onError={() => setOk(false)} />
+  const [i, setI] = useState(0)
+  if (i < MAX_CANDIDATES.length)
+    return <img className="max-logo" src={`${import.meta.env.BASE_URL}${MAX_CANDIDATES[i]}`} alt="MAX" onError={() => setI((n) => n + 1)} />
   return (
     <svg viewBox="0 0 48 48" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="MAX">
       <defs>
