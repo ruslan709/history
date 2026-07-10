@@ -20,7 +20,8 @@
 }
 
 *{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
+html{ scroll-behavior:smooth; overflow-x:hidden; }
+img, svg{ max-width:100%; }
 
 body{
   margin:0;
@@ -32,6 +33,7 @@ body{
   font-family:'Manrope', sans-serif;
   -webkit-font-smoothing:antialiased;
   min-height:100vh;
+  overflow-x:hidden;
 }
 
 h1,h2,h3,.serif{ font-family:'PT Serif', serif; }
