@@ -67,10 +67,6 @@
   animation: jmPop .3s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes jmPop{ from{ transform:translateY(16px) scale(.96); opacity:0; } to{ transform:none; opacity:1; } }
-.jm-card::before{
-  content:""; position:absolute; top:0; left:0; right:0; height:5px; border-radius:24px 24px 0 0;
-  background:linear-gradient(90deg, var(--ink), var(--gold) 50%, var(--burgundy));
-}
 .jm-close{
   position:absolute; top:12px; right:14px; width:34px; height:34px; border-radius:50%;
   border:1px solid var(--line); background:#fff; color:var(--text-muted);
