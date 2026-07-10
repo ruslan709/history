@@ -36,8 +36,35 @@ export default function Dashboard({ content, applyEdit, notify }: EditorProps) {
     setUrl('')
   }
 
+  const [showHelp, setShowHelp] = useState(true)
+
   return (
     <>
+      <div className="card" style={{ borderColor: 'rgba(201,161,90,0.45)', background: 'linear-gradient(120deg,#fff,#fbf6ea)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setShowHelp((v) => !v)}>
+          <h3 style={{ margin: 0 }}>❔ Как добавить материал</h3>
+          <button className="btn btn-ghost btn-sm" type="button">{showHelp ? 'Свернуть' : 'Показать'}</button>
+        </div>
+        {showHelp && (
+          <div style={{ marginTop: 14, fontSize: 14.5, lineHeight: 1.7 }}>
+            <div><b>1.</b> Опубликуйте пост с материалами в канале MAX.</div>
+            <div><b>2.</b> Скопируйте <b>ссылку на этот пост</b>: в MAX нажмите на посте «⋯» → «Скопировать ссылку».</div>
+            <div className="callout warn" style={{ margin: '8px 0' }}>
+              ⚠️ Копируйте именно <b>ссылку</b> — она выглядит как <code>https://max.ru/c/…</code>.
+              Не вставляйте название/подпись поста (текст) — так тема не откроется.
+            </div>
+            <div><b>3.</b> Ниже выберите <b>класс</b> и <b>раздел</b>.</div>
+            <div><b>4.</b> Впишите <b>название темы</b> (например «§4. …»).</div>
+            <div><b>5.</b> Вставьте ссылку в поле <b>«Ссылка на пост MAX»</b>.</div>
+            <div><b>6.</b> Нажмите <b>«Сохранить тему»</b>, затем вверху <b>«💾 Сохранить на сайт»</b>.</div>
+            <div style={{ marginTop: 10, color: 'var(--text-muted)' }}>
+              🔁 Чтобы <b>заменить</b> ссылку у существующей темы — откройте вкладку «Каталог» → у темы нажмите ✏️.<br />
+              🆕 Чтобы добавить <b>доп-материалы</b> к параграфу — в «Каталоге» у темы нажмите 🆕 (создаст строку «(новые материалы к параграфу)»).
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="adm-stats">
         <div className="adm-stat ink"><div className="n">{stats.grades}</div><div className="l">📚 Классов</div></div>
         <div className="adm-stat gold"><div className="n">{stats.sections}</div><div className="l">📖 Разделов / глав</div></div>
