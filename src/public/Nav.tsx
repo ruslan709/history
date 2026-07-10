@@ -482,7 +482,6 @@ export default function Nav() {
             </ol>
             <p className="about-note">💡 Совет: пользуйтесь <b>поиском</b> вверху — он ищет тему сразу по всем классам. А кнопка «Назад» в браузере вернёт вас на то же место.</p>
             <a className="jm-btn" href={CHANNEL_INVITE} target="_blank" rel="noopener noreferrer" onClick={() => setShowAbout(false)}>Подписаться на канал →</a>
-            <button className="jm-later" onClick={() => setShowAbout(false)}>Закрыть</button>
           </div>
         </div>
       )}
