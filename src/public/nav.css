@@ -263,15 +263,15 @@
 .nav-footer .fmark{ color:var(--gold); }
 
 /* ===== Кнопки-действия в шапке ===== */
-.top-actions{ position:absolute; top:16px; right:18px; z-index:3; display:flex; gap:8px; }
+.top-actions{ position:absolute; top:16px; right:18px; z-index:3; display:flex; gap:10px; }
 .ta-btn{
-  width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:var(--card);
-  font-size:17px; cursor:pointer; box-shadow:var(--shadow-sm);
+  width:54px; height:54px; border-radius:16px; border:1.5px solid var(--line); background:var(--card);
+  font-size:26px; line-height:1; cursor:pointer; box-shadow:var(--shadow-md);
   display:flex; align-items:center; justify-content:center;
-  transition:transform .2s ease, box-shadow .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.ta-btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
-@media (max-width:640px){ .top-actions{ top:12px; right:12px; } .ta-btn{ width:36px; height:36px; font-size:16px; } }
+.ta-btn:hover{ transform:translateY(-2px) scale(1.05); box-shadow:var(--shadow-lg); border-color:var(--gold); }
+@media (max-width:640px){ .top-actions{ top:12px; right:12px; gap:8px; } .ta-btn{ width:48px; height:48px; font-size:23px; border-radius:14px; } }
 
 /* ===== Прогресс наполнения ===== */
 .progress-card{
