@@ -62,8 +62,7 @@ export default function Dashboard({ content, applyEdit, notify }: EditorProps) {
               🆕 Чтобы добавить <b>доп-материалы</b> к параграфу — в «Каталоге» у темы нажмите 🆕 (создаст строку «(новые материалы к параграфу)»).
             </div>
             <div className="actions-row" style={{ marginTop: 14 }}>
-              <a className="btn btn-gold btn-sm" href={`${import.meta.env.BASE_URL}spravka.html`} target="_blank" rel="noopener">📚 Полная справка</a>
-              <a className="btn btn-ghost btn-sm" href={`${import.meta.env.BASE_URL}guide.html`} target="_blank" rel="noopener">📖 Гайд с картинками</a>
+              <a className="btn btn-gold btn-sm" href={`${import.meta.env.BASE_URL}spravka.html`} target="_blank" rel="noopener">📚 Открыть справку с картинками</a>
             </div>
           </div>
         )}
