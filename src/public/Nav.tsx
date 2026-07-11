@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Content, Grade, Section, Topic } from '../types'
 import { ROMAN } from '../types'
 import { loadPublic } from '../github'
-import { computeStats, pluralChapters } from '../utils'
+import { computeStats, getMaterials, pluralChapters } from '../utils'
 
 function Illustration() {
   return (
@@ -144,6 +144,7 @@ export default function Nav() {
   const [showAbout, setShowAbout] = useState(false)
   const [dark, setDark] = useState(false)
   const [toast, setToast] = useState('')
+  const [openMats, setOpenMats] = useState<Record<string, boolean>>({})
 
   function closeJoin() {
     setShowJoin(false)
@@ -256,22 +257,56 @@ export default function Nav() {
   }
 
   function renderLesson(t: Topic, subLabel?: string) {
-    const clickable = !!t.url
-    const cls = 'lesson' + (clickable ? ' clickable' : '')
-    const inner = (
-      <>
-        <div className="lesson-icon">{t.icon}</div>
-        <div className="lesson-title">
-          {highlight(t.title, q)}
-          {subLabel && <span className="lesson-sub">{subLabel}</span>}
-        </div>
-        {clickable ? <span className="lesson-arrow">↗</span> : <span className="lesson-soon">скоро</span>}
-      </>
+    const mats = getMaterials(t)
+    const titleBlock = (
+      <div className="lesson-title">
+        {highlight(t.title, q)}
+        {subLabel && <span className="lesson-sub">{subLabel}</span>}
+      </div>
     )
-    return clickable ? (
-      <a key={t.id} id={`t-${t.id}`} className={cls} href={t.url} onClick={() => localStorage.setItem('istoriya_nav_topic', t.id)}>{inner}</a>
-    ) : (
-      <div key={t.id} className={cls}>{inner}</div>
+
+    // Нет материалов — «скоро»
+    if (mats.length === 0) {
+      return (
+        <div key={t.id} className="lesson">
+          <div className="lesson-icon">{t.icon}</div>
+          {titleBlock}
+          <span className="lesson-soon">скоро</span>
+        </div>
+      )
+    }
+
+    // Один материал — обычная кликабельная строка
+    if (mats.length === 1) {
+      return (
+        <a key={t.id} id={`t-${t.id}`} className="lesson clickable" href={mats[0].url} onClick={() => localStorage.setItem('istoriya_nav_topic', t.id)}>
+          <div className="lesson-icon">{t.icon}</div>
+          {titleBlock}
+          <span className="lesson-arrow">↗</span>
+        </a>
+      )
+    }
+
+    // Несколько материалов — раскрывающийся список
+    const open = !!openMats[t.id]
+    return (
+      <div key={t.id} id={`t-${t.id}`} className={'lesson-multi' + (open ? ' open' : '')}>
+        <div className="lesson clickable lm-head" onClick={() => setOpenMats((o) => ({ ...o, [t.id]: !o[t.id] }))}>
+          <div className="lesson-icon">{t.icon}</div>
+          {titleBlock}
+          <span className="lm-badge">📎 {mats.length}</span>
+          <span className="lm-chev">▾</span>
+        </div>
+        <div className="lm-list" style={{ maxHeight: open ? `${mats.length * 60 + 10}px` : '0' }}>
+          {mats.map((m, i) => (
+            <a key={i} className="lm-item" href={m.url} onClick={() => localStorage.setItem('istoriya_nav_topic', t.id)}>
+              <span className="lm-dot">{i === 0 ? '📄' : '📎'}</span>
+              <span className="lm-item-label">{m.label}</span>
+              <span className="lesson-arrow">↗</span>
+            </a>
+          ))}
+        </div>
+      </div>
     )
   }
 

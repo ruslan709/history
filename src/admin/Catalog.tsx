@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { EditorProps } from './shared'
-import type { Grade, Section, Topic } from '../types'
+import type { Grade, Material, Section, Topic } from '../types'
 import { EmojiPicker, Modal } from './ui'
-import { findGrade, findSection, move, newTopic } from './ops'
+import { findGrade, findSection, move, newMaterial, newTopic } from './ops'
 
 type TopicRef = { gradeId: string; sectionId: string; topic: Topic }
 type SectionRef = { gradeId: string; section: Section }
@@ -11,32 +11,15 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
   const [open, setOpen] = useState<Record<string, boolean>>({ [content.grades[0]?.id ?? '']: true })
   const [editTopic, setEditTopic] = useState<TopicRef | null>(null)
   const [addTopicTo, setAddTopicTo] = useState<SectionRef | null>(null)
+  const [addMaterialTo, setAddMaterialTo] = useState<TopicRef | null>(null)
   const [editSection, setEditSection] = useState<SectionRef | null>(null)
   const [editGrade, setEditGrade] = useState<Grade | null>(null)
 
   function confirmDel(msg: string) { return window.confirm(msg) }
 
-  // Добавить пост с новыми материалами к параграфу (та же тема с пометкой в скобках)
-  const EXTRA_RE = /\s*\(новые материалы к параграфу(?:\s+(\d+))?\)\s*$/i
-  function addPart(gradeId: string, section: Section, topic: Topic) {
-    const base = topic.title.replace(EXTRA_RE, '').trimEnd()
-    let maxIdx = 0
-    for (const t of section.topics) {
-      if (t.title.replace(EXTRA_RE, '').trimEnd() !== base) continue
-      const m = t.title.match(EXTRA_RE)
-      if (m) maxIdx = Math.max(maxIdx, m[1] ? parseInt(m[1], 10) : 1)
-    }
-    const next = maxIdx + 1
-    const suffix = next === 1 ? '(новые материалы к параграфу)' : `(новые материалы к параграфу ${next})`
-    const part = newTopic(`${base} ${suffix}`, topic.icon, '')
-    applyEdit((c) => {
-      const s = findSection(c, gradeId, section.id)
-      if (!s) return
-      const idx = s.topics.findIndex((t) => t.id === topic.id)
-      s.topics.splice(idx < 0 ? s.topics.length : idx + 1, 0, part)
-    })
-    setEditTopic({ gradeId, sectionId: section.id, topic: part })
-    notify('Добавлена строка «новые материалы к параграфу» — впишите ссылку и сохраните', 'ok')
+  // Кол-во материалов у темы (основной + дополнительные)
+  function matCount(t: Topic) {
+    return (t.url && t.url.trim() ? 1 : 0) + (t.extras?.filter((e) => e.url && e.url.trim()).length ?? 0)
   }
 
   return (
@@ -98,14 +81,14 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
                           <div className="t-icon">{t.icon}</div>
                           <div className="t-title">
                             {t.title}
-                            <span className="t-url" style={{ color: t.url ? '#2e7d32' : 'var(--text-muted)' }}>
-                              {t.url ? '🔗 ' + t.url : 'без ссылки'}
+                            <span className="t-url" style={{ color: matCount(t) ? '#2e7d32' : 'var(--text-muted)' }}>
+                              {matCount(t) ? `🔗 материалов: ${matCount(t)}` : 'без ссылки'}
                             </span>
                           </div>
                           <div className="mini-btns">
                             <button className="icon-btn" title="Вверх" disabled={ti === 0} onClick={() => applyEdit((c) => { const ss = findSection(c, g.id, s.id); if (ss) move(ss.topics, ti, -1) })}>↑</button>
                             <button className="icon-btn" title="Вниз" disabled={ti === s.topics.length - 1} onClick={() => applyEdit((c) => { const ss = findSection(c, g.id, s.id); if (ss) move(ss.topics, ti, 1) })}>↓</button>
-                            <button className="icon-btn" title="Добавить пост с новыми материалами к этому параграфу" onClick={() => addPart(g.id, s, t)}>🆕</button>
+                            <button className="icon-btn" title="Добавить материал к этой теме" onClick={() => setAddMaterialTo({ gradeId: g.id, sectionId: s.id, topic: t })}>🆕</button>
                             <button className="icon-btn" title="Редактировать тему" onClick={() => setEditTopic({ gradeId: g.id, sectionId: s.id, topic: t })}>✏️</button>
                             <button className="icon-btn del" title="Удалить тему" onClick={() => {
                               if (confirmDel(`Удалить тему «${t.title}»?`))
@@ -127,14 +110,33 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
         <TopicModal
           initial={editTopic.topic}
           onClose={() => setEditTopic(null)}
-          onSave={(title, icon, url) => {
+          onSave={(title, icon, url, extras) => {
             applyEdit((c) => {
               const s = findSection(c, editTopic.gradeId, editTopic.sectionId)
               const t = s?.topics.find((x) => x.id === editTopic.topic.id)
-              if (t) { t.title = title; t.icon = icon; t.url = url }
+              if (t) { t.title = title; t.icon = icon; t.url = url; t.extras = extras }
             })
             notify('Тема обновлена ✓', 'ok')
             setEditTopic(null)
+          }}
+        />
+      )}
+
+      {addMaterialTo && (
+        <MaterialModal
+          hasMain={!!(addMaterialTo.topic.url && addMaterialTo.topic.url.trim())}
+          suggestLabel={`Дополнение ${(addMaterialTo.topic.extras?.length ?? 0) + 1}`}
+          onClose={() => setAddMaterialTo(null)}
+          onSave={(label, url) => {
+            applyEdit((c) => {
+              const s = findSection(c, addMaterialTo.gradeId, addMaterialTo.sectionId)
+              const t = s?.topics.find((x) => x.id === addMaterialTo.topic.id)
+              if (!t) return
+              if (!t.url || !t.url.trim()) { t.url = url }
+              else { (t.extras = t.extras ?? []).push(newMaterial(label || `Дополнение ${(t.extras?.length ?? 0) + 1}`, url)) }
+            })
+            notify('Материал добавлен ✓', 'ok')
+            setAddMaterialTo(null)
           }}
         />
       )}
@@ -144,10 +146,12 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
           initial={newTopic()}
           title="Новая тема"
           onClose={() => setAddTopicTo(null)}
-          onSave={(title, icon, url) => {
+          onSave={(title, icon, url, extras) => {
             applyEdit((c) => {
               const s = findSection(c, addTopicTo.gradeId, addTopicTo.section.id)
-              s?.topics.push(newTopic(title, icon, url))
+              const nt = newTopic(title, icon, url)
+              if (extras.length) nt.extras = extras
+              s?.topics.push(nt)
             })
             notify('Тема добавлена ✓', 'ok')
             setAddTopicTo(null)
@@ -189,11 +193,17 @@ export default function Catalog({ content, applyEdit, notify }: EditorProps) {
 }
 
 function TopicModal({ initial, title = 'Редактировать тему', onClose, onSave }: {
-  initial: Topic; title?: string; onClose: () => void; onSave: (title: string, icon: string, url: string) => void
+  initial: Topic; title?: string; onClose: () => void; onSave: (title: string, icon: string, url: string, extras: Material[]) => void
 }) {
   const [t, setT] = useState(initial.title)
   const [icon, setIcon] = useState(initial.icon)
   const [url, setUrl] = useState(initial.url)
+  const [extras, setExtras] = useState<Material[]>((initial.extras ?? []).map((e) => ({ ...e })))
+
+  function addExtra() { setExtras((x) => [...x, newMaterial(`Дополнение ${x.length + 1}`, '')]) }
+  function upExtra(id: string, patch: Partial<Material>) { setExtras((x) => x.map((e) => (e.id === id ? { ...e, ...patch } : e))) }
+  function delExtra(id: string) { setExtras((x) => x.filter((e) => e.id !== id)) }
+
   return (
     <Modal title={title} onClose={onClose}>
       <div className="field">
@@ -202,12 +212,52 @@ function TopicModal({ initial, title = 'Редактировать тему', on
       </div>
       <EmojiPicker value={icon} onChange={setIcon} />
       <div className="field">
-        <label>Ссылка на пост MAX</label>
+        <label>Основная ссылка на пост MAX</label>
         <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://max.ru/…" />
+      </div>
+
+      <div className="field">
+        <label>Дополнительные материалы {extras.length ? `· ${extras.length}` : ''}</label>
+        <span className="hint">Раскрываются списком под темой на сайте. Один пост = один материал.</span>
+        {extras.map((e) => (
+          <div key={e.id} style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <input className="input" style={{ flex: '0 0 32%' }} value={e.label} onChange={(ev) => upExtra(e.id, { label: ev.target.value })} placeholder="Название" />
+            <input className="input" style={{ flex: 1 }} value={e.url} onChange={(ev) => upExtra(e.id, { url: ev.target.value })} placeholder="https://max.ru/…" />
+            <button type="button" className="icon-btn del" title="Удалить материал" onClick={() => delExtra(e.id)}>🗑️</button>
+          </div>
+        ))}
+        <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={addExtra}>+ Добавить материал</button>
+      </div>
+
+      <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onClose}>Отмена</button>
+        <button className="btn btn-primary" onClick={() => t.trim() && onSave(t.trim(), icon, url.trim(), extras.map((e) => ({ ...e, label: e.label.trim(), url: e.url.trim() })).filter((e) => e.url))}>Сохранить</button>
+      </div>
+    </Modal>
+  )
+}
+
+function MaterialModal({ hasMain, suggestLabel, onClose, onSave }: {
+  hasMain: boolean; suggestLabel: string; onClose: () => void; onSave: (label: string, url: string) => void
+}) {
+  const [label, setLabel] = useState(suggestLabel)
+  const [url, setUrl] = useState('')
+  return (
+    <Modal title="Добавить материал к теме" onClose={onClose}>
+      {hasMain && (
+        <div className="field">
+          <label>Название материала</label>
+          <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Дополнение / Презентация / Тест" />
+        </div>
+      )}
+      <div className="field">
+        <label>Ссылка на пост MAX</label>
+        <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://max.ru/…" autoFocus />
+        <span className="hint">{hasMain ? 'Добавится как дополнительный материал к этой теме (раскроется списком на сайте).' : 'Станет основным материалом темы.'}</span>
       </div>
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Отмена</button>
-        <button className="btn btn-primary" onClick={() => t.trim() && onSave(t.trim(), icon, url.trim())}>Сохранить</button>
+        <button className="btn btn-primary" onClick={() => url.trim() && onSave(label.trim(), url.trim())}>Добавить</button>
       </div>
     </Modal>
   )

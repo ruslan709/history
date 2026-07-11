@@ -1,11 +1,18 @@
 // ==== Модель данных каталога «История на пальцах» ====
 // Класс → Раздел (глава) → Тема → ссылка на пост MAX
 
+export interface Material {
+  id: string
+  label: string // название материала («Основной», «Презентация», «Дополнение 1»…)
+  url: string
+}
+
 export interface Topic {
   id: string
   icon: string
   title: string
-  url: string // ссылка на пост в MAX (может быть пустой)
+  url: string // основная ссылка на пост в MAX (может быть пустой)
+  extras?: Material[] // дополнительные материалы к этой же теме
 }
 
 export interface Section {

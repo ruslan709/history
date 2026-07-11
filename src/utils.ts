@@ -1,4 +1,17 @@
-import type { Content } from './types'
+import type { Content, Topic } from './types'
+
+// Все материалы темы: основная ссылка + дополнительные
+export function getMaterials(t: Topic): { label: string; url: string }[] {
+  const list: { label: string; url: string }[] = []
+  if (t.url && t.url.trim()) list.push({ label: 'Основной материал', url: t.url.trim() })
+  for (const e of t.extras ?? []) {
+    if (e.url && e.url.trim()) list.push({ label: e.label?.trim() || 'Дополнительный материал', url: e.url.trim() })
+  }
+  return list
+}
+export function topicHasMaterial(t: Topic): boolean {
+  return getMaterials(t).length > 0
+}
 
 export async function sha256(text: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
@@ -24,7 +37,7 @@ export function computeStats(c: Content): Stats {
     sections += g.sections.length
     for (const s of g.sections) {
       topics += s.topics.length
-      for (const t of s.topics) if (t.url && t.url.trim()) links++
+      for (const t of s.topics) if (topicHasMaterial(t)) links++
     }
   }
   return { grades: c.grades.length, sections, topics, links }

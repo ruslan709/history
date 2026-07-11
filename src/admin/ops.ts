@@ -1,8 +1,11 @@
-import type { Content, Grade, Section, Topic } from '../types'
+import type { Content, Grade, Material, Section, Topic } from '../types'
 import { uid } from '../utils'
 
 export function newTopic(title = '', icon = '📖', url = ''): Topic {
   return { id: uid('t'), title, icon, url }
+}
+export function newMaterial(label = '', url = ''): Material {
+  return { id: uid('m'), label, url }
 }
 export function newSection(roman: string, name: string, course = ''): Section {
   return { id: uid('s'), roman, name, course, topics: [] }
