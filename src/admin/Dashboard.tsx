@@ -59,7 +59,7 @@ export default function Dashboard({ content, applyEdit, notify }: EditorProps) {
             <div><b>6.</b> Нажмите <b>«Сохранить тему»</b>, затем вверху <b>«💾 Сохранить на сайт»</b>.</div>
             <div style={{ marginTop: 10, color: 'var(--text-muted)' }}>
               🔁 Чтобы <b>заменить</b> ссылку у существующей темы — откройте вкладку «Каталог» → у темы нажмите ✏️.<br />
-              🆕 Чтобы добавить <b>доп-материалы</b> к параграфу — в «Каталоге» у темы нажмите 🆕 (создаст строку «(новые материалы к параграфу)»).
+              🆕 Чтобы добавить <b>ещё материал к той же теме</b> — в «Каталоге» у темы нажмите 🆕. На сайте тема останется одной строкой, а материалы раскроются списком.
             </div>
             <div className="actions-row" style={{ marginTop: 14 }}>
               <a className="btn btn-gold btn-sm" href={`${import.meta.env.BASE_URL}spravka.html`} target="_blank" rel="noopener">📚 Открыть справку с картинками</a>
